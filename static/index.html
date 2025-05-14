@@ -125,7 +125,9 @@
   </style>
 </head>
 <body class="py-4">
-  <h1 class="mb-4">LearnUs Alimi</h1>
+  <h1 class="mb-4 d-flex justify-content-between align-items-center">LearnUs Alimi
+    <button id="logoutBtn" class="btn btn-outline-secondary btn-sm d-none">Logout</button>
+  </h1>
 
   <!-- Login form -->
   <form id="login-form" class="mb-4">
@@ -137,7 +139,13 @@
       <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
       <input type="password" id="password" class="form-control" placeholder="Password" required />
     </div>
-    <button type="submit" class="btn btn-primary w-100">Login</button>
+    <div class="col-12 form-check mb-2">
+      <input class="form-check-input" type="checkbox" id="rememberMe">
+      <label class="form-check-label" for="rememberMe">자동 로그인</label>
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary w-100">Login</button>
+    </div>
     <div id="login-error" class="text-danger mt-3 text-center"></div>
   </form>
 
@@ -183,6 +191,7 @@
     const courseSelect = document.getElementById('course-select');
     const calendarEl = document.getElementById('calendar');
     const loginError = document.getElementById('login-error');
+    const logoutBtn = document.getElementById('logoutBtn');
     let token = null;
     let calendar = null;
 
@@ -208,6 +217,16 @@
         }
         const data = await res.json();
         token = data.token;
+        const remember = document.getElementById('rememberMe').checked;
+        if (remember) {
+          localStorage.setItem('learnus_token', token);
+          localStorage.setItem('learnus_id', username);
+          localStorage.setItem('learnus_pw', password);
+        } else {
+          localStorage.removeItem('learnus_token');
+          localStorage.removeItem('learnus_id');
+          localStorage.removeItem('learnus_pw');
+        }
         loginForm.classList.add('d-none');
         await loadAllEvents();
       } catch (err) {
@@ -236,6 +255,7 @@
 
     function renderCalendar(events) {
       calendarEl.classList.remove('d-none');
+      logoutBtn.classList.remove('d-none');
       if (calendar) {
         calendar.removeAllEvents();
         calendar.addEventSource(events);
@@ -289,6 +309,44 @@
 
       document.getElementById('todo-section').classList.remove('d-none');
     }
+
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await fetch('/logout', { method: 'POST', headers: { 'X-Auth-Token': token } });
+      } catch {}
+      localStorage.removeItem('learnus_token');
+      localStorage.removeItem('learnus_id');
+      localStorage.removeItem('learnus_pw');
+      location.reload();
+    });
+
+    // Auto login on page load
+    window.addEventListener('load', async () => {
+      const storedToken = localStorage.getItem('learnus_token');
+      const storedId = localStorage.getItem('learnus_id');
+      const storedPw = localStorage.getItem('learnus_pw');
+
+      if (storedToken) {
+        token = storedToken;
+        try {
+          await apiGet('/ping');
+          loginForm.classList.add('d-none');
+          await loadAllEvents();
+          return;
+        } catch {
+          token = null;
+          localStorage.removeItem('learnus_token');
+        }
+      }
+
+      if (storedId && storedPw) {
+        document.getElementById('username').value = storedId;
+        document.getElementById('password').value = storedPw;
+        document.getElementById('rememberMe').checked = true;
+        // auto-submit login form
+        loginForm.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
+    });
   </script>
 </body>
 </html> 

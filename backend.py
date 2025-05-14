@@ -176,6 +176,22 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
     return {"calendar": calendar_events, "videos": todo_videos, "assignments": todo_assigns}
 
 
+# Simple health/token validation endpoint
+@app.get("/ping")
+def ping(client: LearnUsClient = Depends(get_client)):
+    return {"ok": True}
+
+
+# Logout: remove session & cache
+@app.post("/logout")
+def logout(x_auth_token: Optional[str] = Header(None)):
+    if not x_auth_token or x_auth_token not in _SESSIONS:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    client = _SESSIONS.pop(x_auth_token)
+    _COURSE_CACHE.pop(id(client), None)
+    return {"ok": True}
+
+
 # ----------------------------- Static files -----------------------------
 # Serve simple frontend (static/index.html etc.) under /
 import pathlib
