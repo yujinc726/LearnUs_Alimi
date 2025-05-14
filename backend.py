@@ -57,8 +57,10 @@ def login(payload: LoginRequest):
     client = LearnUsClient()
     try:
         client.login(payload.username, payload.password)
-    except LearnUsLoginError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    except LearnUsLoginError:
+        raise HTTPException(status_code=400, detail="로그인에 실패했습니다. 학번/비밀번호를 확인해주세요.")
+    except Exception:
+        raise HTTPException(status_code=400, detail="로그인 중 알 수 없는 오류가 발생했습니다.")
     token = uuid.uuid4().hex
     _SESSIONS[token] = client
     return {"token": token}

@@ -213,8 +213,12 @@
           body: JSON.stringify({ username, password }),
         });
         if (!res.ok) {
-          const msg = await res.text();
-          throw new Error(msg);
+          try {
+            const errJson = await res.json();
+            throw new Error(errJson.detail || '로그인에 실패했습니다. LearnUs 학번/비밀번호를 확인해주세요.');
+          } catch {
+            throw new Error('로그인에 실패했습니다. LearnUs 학번/비밀번호를 확인해주세요.');
+          }
         }
         const data = await res.json();
         token = data.token;
@@ -241,7 +245,12 @@
       const res = await fetch(path, { headers: { 'X-Auth-Token': token } });
       if (!res.ok) {
         showLoading(false);
-        throw new Error(await res.text());
+        try {
+          const errJson = await res.json();
+          throw new Error(errJson.detail || '요청에 실패했습니다.');
+        } catch {
+          throw new Error('요청에 실패했습니다.');
+        }
       }
       const data = await res.json();
       showLoading(false);
