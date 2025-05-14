@@ -37,7 +37,7 @@ def get_client(x_auth_token: Optional[str] = Header(None)) -> LearnUsClient:
     return _SESSIONS[x_auth_token]
 
 
-def _get_course_activities_cached(client: LearnUsClient, course_id: int, ttl: int = 300):
+def _get_course_activities_cached(client: LearnUsClient, course_id: int, ttl: int = 900):
     """Return activities from cache if still fresh; otherwise fetch and update cache."""
     import time
 
@@ -95,7 +95,7 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
 
     activities_by_course: Dict[int, List] = {}
     from concurrent.futures import ThreadPoolExecutor
-    with ThreadPoolExecutor(max_workers=min(8, len(course_ids))) as pool:
+    with ThreadPoolExecutor(max_workers=min(16, len(course_ids))) as pool:
         for cid, acts in pool.map(fetch, course_ids):
             activities_by_course[cid] = acts
 
@@ -120,7 +120,7 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
         return module_id, client.get_assignment_detail(module_id)
 
     if assign_need_detail:
-        with ThreadPoolExecutor(max_workers=min(8, len(assign_need_detail))) as pool:
+        with ThreadPoolExecutor(max_workers=min(16, len(assign_need_detail))) as pool:
             for module_id, detail in pool.map(lambda t: fetch_assign(t[1]), assign_need_detail):
                 # find corresponding activity object
                 for cid, mid, act in assign_need_detail:
