@@ -323,13 +323,9 @@
         const link = document.createElement('a');
         link.href = `https://ys.learnus.org/mod/assign/view.php?id=${a.id}`;
         link.target = '_blank';
-        link.rel = 'noopener';
+        link.rel = 'noopener noreferrer';
         link.textContent = a.title;
         link.className = 'text-decoration-none';
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          window.open(link.href, '_blank', 'noopener,width=1200,height=800');
-        });
         li.appendChild(link);
         const badge = document.createElement('span');
         badge.className = 'badge bg-danger rounded-pill';
