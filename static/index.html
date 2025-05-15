@@ -164,17 +164,13 @@
       <h4>시청해야 할 동영상</h4>
       <ul id="video-list" class="list-group"></ul>
     </div>
-    <div class="col-12 mb-3">
+    <div class="col-12">
       <h4>제출해야 할 과제</h4>
       <ul id="assign-list" class="list-group"></ul>
     </div>
-    <div class="col-12">
-      <h4>제출한 과제</h4>
-      <ul id="submitted-list" class="list-group"></ul>
-    </div>
   </div>
 
-  <!-- Calendar -->>
+  <!-- Calendar -->
   <div id="calendar" class="d-none"></div>
 
   <!-- Loading overlay -->
@@ -265,7 +261,7 @@
     async function loadAllEvents() {
       const data = await apiGet('/events');
       renderCalendar(data.calendar);
-      renderTodos(data.videos, data.assignments, data.submitted);
+      renderTodos(data.videos, data.assignments);
     }
 
     function renderCalendar(events) {
@@ -294,10 +290,9 @@
       calendar.render();
     }
 
-    function renderTodos(videos, assigns, submitted) {
+    function renderTodos(videos, assigns) {
       const videoList = document.getElementById('video-list');
       const assignList = document.getElementById('assign-list');
-      const submittedList = document.getElementById('submitted-list');
 
       videoList.innerHTML = videos.length ? '' : '<li class="list-group-item">모두 완료!</li>';
       videos.forEach(v => {
@@ -337,24 +332,6 @@
         badge.textContent = new Date(a.due).toLocaleString('ko-KR');
         li.appendChild(badge);
         assignList.appendChild(li);
-      });
-
-      submittedList.innerHTML = submitted.length ? '' : '<li class="list-group-item">없음</li>';
-      submitted.forEach(s => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        const link = document.createElement('a');
-        link.href = `/proxy/assign/${s.id}`;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.textContent = s.title;
-        link.className = 'text-decoration-none';
-        li.appendChild(link);
-        const badge = document.createElement('span');
-        badge.className = 'badge bg-success rounded-pill';
-        badge.textContent = new Date(s.due).toLocaleString('ko-KR');
-        li.appendChild(badge);
-        submittedList.appendChild(li);
       });
 
       document.getElementById('todo-section').classList.remove('d-none');

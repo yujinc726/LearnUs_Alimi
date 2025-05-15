@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Tuple
 import re
 
 from fastapi import FastAPI, HTTPException, Depends, Header, status
-from fastapi.responses import JSONResponse, FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -84,7 +84,6 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
     calendar_events: List[dict] = []
     todo_videos: List[dict] = []
     todo_assigns: List[dict] = []
-    submitted_assigns: List[dict] = []
 
     # Map course id to name for prefixing titles
     course_name_map = {
@@ -142,20 +141,13 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
 
             if a.type == "assign":
                 # Re-evaluate after details
-                from datetime import datetime
-                now = datetime.now()
-
-                if a.extra.get("submitted"):
-                    # add to submitted list if deadline not passed
-                    if a.due_time and a.due_time >= now:
-                        submitted_assigns.append({"id": a.id, "title": full_title, "due": a.due_time.isoformat()})
-                    continue  # do not include in todo
-
-                if a.completed:
+                if a.completed or a.extra.get("submitted"):
                     continue
                 if not a.due_time:
                     continue
                 # Skip past deadline
+                from datetime import datetime
+                now = datetime.now()
                 if a.due_time < now:
                     continue
                 todo_assigns.append({"id": a.id, "title": full_title, "due": a.due_time.isoformat()})
@@ -182,9 +174,8 @@ def get_events(course_id: Optional[int] = None, client: LearnUsClient = Depends(
     calendar_events.sort(key=lambda x: x["start"])
     todo_videos.sort(key=lambda x: x["due"])
     todo_assigns.sort(key=lambda x: x["due"])
-    submitted_assigns.sort(key=lambda x: x["due"])
 
-    return {"calendar": calendar_events, "videos": todo_videos, "assignments": todo_assigns, "submitted": submitted_assigns}
+    return {"calendar": calendar_events, "videos": todo_videos, "assignments": todo_assigns}
 
 
 # Simple health/token validation endpoint
@@ -207,20 +198,4 @@ def logout(x_auth_token: Optional[str] = Header(None)):
 # Serve simple frontend (static/index.html etc.) under /
 import pathlib
 _static_path = pathlib.Path(__file__).parent / "static"
-app.mount("/", StaticFiles(directory=_static_path, html=True), name="static")
-
-# -------------------------- Proxy endpoints -----------------------------
-
-@app.get("/proxy/vod/{module_id}")
-def proxy_vod(module_id: int, client: LearnUsClient = Depends(get_client)):
-    url = f"{client.BASE_URL}/mod/vod/viewer.php?id={module_id}"
-    res = client.ensure_logged_in().get(url)
-    if res.status_code != 200:
-        raise HTTPException(502, detail="LearnUs 응답 오류")
-    return HTMLResponse(res.text)
-
-
-@app.get("/proxy/assign/{module_id}")
-def proxy_assign(module_id: int, client: LearnUsClient = Depends(get_client)):
-    url = f"{client.BASE_URL}/mod/assign/view.php?id={module_id}"
-    return RedirectResponse(url) 
+app.mount("/", StaticFiles(directory=_static_path, html=True), name="static") 
