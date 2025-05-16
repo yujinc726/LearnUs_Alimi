@@ -138,11 +138,32 @@
       margin: -1rem auto 2rem auto; /* slight pull-up to close gap, then bottom space */
       padding-left: 0.75rem;
     }
+    .logout-btn {
+      background: transparent;
+      border: 2px solid; /* needed for border-image to render */
+      border-image-slice: 1;
+      border-image-source: linear-gradient(90deg, var(--primary-gradient-start), var(--primary-gradient-end));
+      color: var(--primary-gradient-start);
+      font-weight: 600;
+      transition: all 0.25s ease;
+    }
+
+    .logout-btn:hover {
+      /* maintain same appearance; only cursor changes */
+      text-decoration: none;
+      box-shadow: none;
+    }
+
+    .logout-btn.disabled,
+    .logout-btn:disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body class="py-4">
   <h1 class="mb-4 d-flex justify-content-between align-items-center">LearnUs Alimi
-    <button id="logoutBtn" class="btn btn-outline-secondary btn-sm d-none">Logout</button>
+    <button id="logoutBtn" class="btn btn-sm logout-btn d-none"><i class="fa-solid fa-arrow-right-from-bracket me-1"></i>Logout</button></h1>
   </h1>
   <p id="subtitle" class="mb-4 text-muted">Developed by 차유진</p>
 
@@ -161,10 +182,10 @@
       <input class="form-check-input" type="checkbox" id="rememberMe">
       <label class="form-check-label" for="rememberMe">자동 로그인</label>
     </div>
-    <div class="col-12">
+    <div class="col-12 mt-3">
       <button type="submit" class="btn btn-primary w-100">Login</button>
     </div>
-    <div id="login-error" class="text-danger mt-3 text-center"></div>
+    <div id="login-error" class="text-danger mt-2 text-center"></div>
   </form>
 
   <!-- Todo Lists -->
