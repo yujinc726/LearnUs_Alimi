@@ -167,10 +167,13 @@ def parse_assignment_detail(html: str) -> dict:
         value = value_td.get_text(strip=True)
         if label == "제출 여부":
             info["submission_status"] = value
-            info["submitted"] = "완료" in value or "Submitted" in value
-        elif label == "채점 상황":
+            info["submitted"] = value == "제출 완료"
+        elif label == "Submission status":
+            info["submission_status"] = value
+            info["submitted"] = value == "Submitted for grading"
+        elif label == "채점 상황" or label == "Grading status":
             info["grading_status"] = value
-        elif label == "종료 일시":
+        elif label == "종료 일시" or label == "Due date":
             try:
                 info["due_time"] = _parse_datetime(value)
             except ValueError:
