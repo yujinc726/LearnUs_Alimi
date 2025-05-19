@@ -83,10 +83,12 @@ def parse_course_activities(html: str) -> List[Activity]:
         span_name = li.select_one("span.instancename")
         if not span_name:
             continue
-        # Clone the span and remove any child with class accesshide
-        title = span_name.get_text(strip=True)
-        # Remove trailing '동영상' or '과제' word that came from accesshide span.
-        title = re.sub(r"\s*(동영상|과제)$", "", title)
+        # Remove any child with class accesshide
+        # accesshide = span_name.select_one("span.accesshide")
+        # if accesshide:
+        #     accesshide.decompose()
+        # title = span_name.get_text(strip=True)
+        # # title = re.sub(r"\s*(동영상|과제)$", "", title)
 
         # Completion status: check for <img ... src="...completion-auto-y.svg"> existing inside .autocompletion
         completed = False
@@ -154,7 +156,7 @@ def parse_assignment_detail(html: str) -> dict:
         value = value_td.get_text(strip=True)
         if label == "제출 여부":
             info["submission_status"] = value
-            info["submitted"] = "완료" in value  # crude heuristic
+            info["submitted"] = "완료" in value or "Submitted" in value
         elif label == "채점 상황":
             info["grading_status"] = value
         elif label == "종료 일시":
