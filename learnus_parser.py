@@ -83,12 +83,17 @@ def parse_course_activities(html: str) -> List[Activity]:
         span_name = li.select_one("span.instancename")
         if not span_name:
             continue
+        
+        # Debug: Print HTML structure to check if accesshide span exists
+        print(f"HTML Structure: {span_name}")
+        
         # Remove any child with class accesshide
-        # accesshide = span_name.select_one("span.accesshide")
-        # if accesshide:
-        #     accesshide.decompose()
-        # title = span_name.get_text(strip=True)
-        # # title = re.sub(r"\s*(동영상|과제)$", "", title)
+        accesshide = span_name.select_one("span.accesshide")
+        if accesshide:
+            accesshide.decompose()
+        title = span_name.get_text(strip=True)
+        # Remove trailing '동영상' or '과제' word that came from accesshide span
+        # title = re.sub(r"\s*(동영상|과제)$", "", title)
 
         # Completion status: check for <img ... src="...completion-auto-y.svg"> existing inside .autocompletion
         completed = False
