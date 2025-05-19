@@ -31,6 +31,9 @@ class Activity:
 _DATE_RANGE_RE = re.compile(
     r"\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s*~\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})",
 )
+_ONLY_END_DATE_RE = re.compile(
+    r"\s*~\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})",
+)
 _LATE_RE = re.compile(r"Late\s*:\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
 
 # Accept both 'YYYY-MM-DD HH:MM:SS' and 'YYYY-MM-DD HH:MM'
@@ -114,6 +117,12 @@ def parse_course_activities(html: str) -> List[Activity]:
             if m:
                 open_time = _parse_datetime(m.group(1))
                 due_time = _parse_datetime(m.group(2))
+            else:
+                # Check for end date only format (~ END_TIME)
+                end_only_m = _ONLY_END_DATE_RE.search(text)
+                if end_only_m:
+                    open_time = None
+                    due_time = _parse_datetime(end_only_m.group(1))
             late_m = _LATE_RE.search(text)
             if late_m:
                 late_due_time = _parse_datetime(late_m.group(1))
