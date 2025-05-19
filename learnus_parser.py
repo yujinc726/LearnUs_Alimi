@@ -89,8 +89,8 @@ def parse_course_activities(html: str) -> List[Activity]:
         
         # Remove any child with class accesshide
         accesshide = span_name.select_one("span.accesshide")
-        # if accesshide:
-        #     accesshide.decompose()
+        if accesshide:
+            accesshide.decompose()
         title = span_name.get_text(strip=True)
         # Remove trailing '동영상' or '과제' word that came from accesshide span
         # title = re.sub(r"\s*(동영상|과제)$", "", title)
