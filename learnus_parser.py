@@ -87,9 +87,6 @@ def parse_course_activities(html: str) -> List[Activity]:
         if not span_name:
             continue
         
-        # Debug: Print HTML structure to check if accesshide span exists
-        print(f"HTML Structure: {span_name}")
-        
         # Remove any child with class accesshide
         accesshide = span_name.select_one("span.accesshide")
         if accesshide:
